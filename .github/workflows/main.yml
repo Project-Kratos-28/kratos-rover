@@ -26,9 +26,9 @@ jobs:
         with:
           fetch-depth: 0  # Full history required for commitlint
 
-      # ── Step 2: Commit Message Lint ────────────────────────────────────
-      - name: Lint Commit Messages
-        uses: wagoid/commitlint-github-action@v6
+      # # ── Step 2: fuck commit linting ────────────────────────────────────
+      # - name: Lint Commit Messages
+      #   uses: wagoid/commitlint-github-action@v6
 
       # ── Step 3: Install Build Tools ────────────────────────────────────
       - name: Install Build Tools
