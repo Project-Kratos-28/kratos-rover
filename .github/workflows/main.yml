@@ -1,0 +1,68 @@
+# =============================================================================
+# Kratos Rover — Integration Pipeline
+# =============================================================================
+# Triggers on every push to main and every PR targeting main.
+# Runs inside osrf/ros:jazzy-desktop-full for a full ROS 2 build environment.
+
+name: Kratos Rover CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    name: Build, Lint & Test
+    runs-on: ubuntu-24.04
+    container:
+      image: osrf/ros:jazzy-desktop-full
+
+    steps:
+      # ── Step 1: Checkout ───────────────────────────────────────────────
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history required for commitlint
+
+      # ── Step 2: Commit Message Lint ────────────────────────────────────
+      - name: Lint Commit Messages
+        uses: wagoid/commitlint-github-action@v6
+
+      # ── Step 3: Install Build Tools ────────────────────────────────────
+      - name: Install Build Tools
+        run: |
+          apt-get update && apt-get install -y --no-install-recommends \
+            python3-colcon-common-extensions \
+            clang-format \
+            ros-jazzy-ament-lint \
+            ros-jazzy-ament-cmake-cpplint \
+            ros-jazzy-ament-cpplint \
+          && rm -rf /var/lib/apt/lists/*
+
+      # ── Step 4: C++ Linting ────────────────────────────────────────────
+      - name: Code Quality Check (C++ Lint)
+        run: |
+          source /opt/ros/jazzy/setup.bash
+          ament_cpplint .
+        shell: bash
+
+      # ── Step 5: Compile Workspace ──────────────────────────────────────
+      - name: Compile Workspace
+        run: |
+          source /opt/ros/jazzy/setup.bash
+          colcon build \
+            --base-paths . \
+            --symlink-install \
+            --event-handlers console_direct+
+        shell: bash
+
+      # ── Step 6: Unit Tests ─────────────────────────────────────────────
+      - name: Execute Unit Tests
+        run: |
+          source /opt/ros/jazzy/setup.bash
+          source install/setup.bash
+          colcon test --event-handlers console_direct+
+          colcon test-result --all
+        shell: bash
