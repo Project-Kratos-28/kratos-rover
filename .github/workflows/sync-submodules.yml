@@ -1,0 +1,48 @@
+# Child repo pushed to main -> bump submodule pointers on `development`
+# and keep a PR development -> main open for review.
+name: Sync Submodules
+
+on:
+  repository_dispatch:
+    types: [child-updated]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: sync-submodules
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: development
+          submodules: recursive
+          token: ${{ secrets.SUBMODULE_TOKEN || github.token }}   # needs read access to child repos if private
+
+      - name: Bump submodules to latest main
+        run: |
+          git submodule update --remote --merge
+          if git diff --quiet; then
+            echo "No submodule changes."; exit 0
+          fi
+          git config user.name  "kratos-bot"
+          git config user.email "kratos-bot@users.noreply.github.com"
+          git add -A
+          git commit -m "chore: bump submodules (${{ github.event.client_payload.repo || 'manual' }})"
+          git push origin development
+
+      - name: Ensure PR development -> main exists
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ -z "$(gh pr list --head development --base main --state open --json number -q '.[0].number')" ]; then
+            gh pr create --base main --head development \
+              --title "Rolling update: submodule bumps" \
+              --body "Automated. CI must pass; merge to deploy to the Orin."
+          fi

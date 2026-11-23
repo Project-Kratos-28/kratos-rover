@@ -25,6 +25,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0  # Full history required for commitlint
+          submodules: recursive
 
       # # ── Step 2: fuck commit linting ────────────────────────────────────
       # - name: Lint Commit Messages

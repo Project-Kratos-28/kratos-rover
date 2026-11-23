@@ -1,0 +1,6 @@
+[Unit]
+Description=Kratos rover source updater
+
+[Service]
+Type=oneshot
+ExecStart=%h/kratos_ws/src/kratos-rover/scripts/orin/rover-update.sh
