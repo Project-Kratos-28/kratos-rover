@@ -23,7 +23,9 @@ jobs:
         with:
           ref: development
           submodules: recursive
-          token: ${{ secrets.SUBMODULE_TOKEN || github.token }}   # needs read access to child repos if private
+          # PAT (not github.token): reads private children, pushes, and makes the push/PR
+          # trigger CI (events made with github.token don't start other workflows).
+          token: ${{ secrets.SUBMODULE_TOKEN }}
 
       - name: Bump submodules to latest main
         run: |
@@ -39,7 +41,7 @@ jobs:
 
       - name: Ensure PR development -> main exists
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.SUBMODULE_TOKEN }}
         run: |
           if [ -z "$(gh pr list --head development --base main --state open --json number -q '.[0].number')" ]; then
             gh pr create --base main --head development \
