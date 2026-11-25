@@ -35,11 +35,22 @@ rollback_src() { git reset --keep "$old" && git submodule update --init --recurs
 log "building $new into $dest"
 set +e
 (
+  set +u
   source /opt/ros/"${ROS_DISTRO:-jazzy}"/setup.bash
-  nice -n 10 colcon build \
-    --base-paths "$REPO" \
+  # Same patched GLIM overlays and package set as Auto_nav2/build_bare.sh
+  for o in "${KRATOS_GLIM_CORE_OVERLAY:-/opt/glim_core_fix_ws/install/local_setup.bash}" \
+           "${KRATOS_GLIM_OVERLAY:-/opt/glim_ros_fix_ws/install/local_setup.bash}"; do
+    [[ -f $o ]] && source "$o" || echo "WARNING: overlay missing: $o"
+  done
+  cd "$REPO"
+  nice -n 10 colcon --log-base "$dest/log" build \
+    --base-paths Auto_nav2 Auto_Cams \
     --build-base "$dest/build" --install-base "$dest/install" \
     --parallel-workers "$WORKERS" --symlink-install \
+    --packages-select livox_ros_driver2 lidar_angle_filter \
+        waypoint_interfaces waypoint_manager glim_dump_export pcd2pgm \
+        kratos_nav kratos_traversability kratos_perception kratos_bringup \
+        kratos_msgs kratos_cameras \
     --cmake-args -DROS_EDITION=ROS2 -DDISTRO_ROS="${ROS_DISTRO:-jazzy}" -DCMAKE_BUILD_TYPE=Release
 ) > "$BUILDS/$new.log" 2>&1
 rc=$?
