@@ -39,7 +39,8 @@ set +e
   nice -n 10 colcon build \
     --base-paths "$REPO" \
     --build-base "$dest/build" --install-base "$dest/install" \
-    --parallel-workers "$WORKERS" --symlink-install
+    --parallel-workers "$WORKERS" --symlink-install \
+    --cmake-args -DROS_EDITION=ROS2 -DDISTRO_ROS="${ROS_DISTRO:-jazzy}" -DCMAKE_BUILD_TYPE=Release
 ) > "$BUILDS/$new.log" 2>&1
 rc=$?
 set -e

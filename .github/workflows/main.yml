@@ -56,7 +56,8 @@ jobs:
           colcon build \
             --base-paths . \
             --symlink-install \
-            --event-handlers console_direct+
+            --event-handlers console_direct+ \
+            --cmake-args -DROS_EDITION=ROS2 -DDISTRO_ROS=jazzy
         shell: bash
 
       # ── Step 6: Unit Tests ─────────────────────────────────────────────
