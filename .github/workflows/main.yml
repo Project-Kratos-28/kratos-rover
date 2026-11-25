@@ -25,6 +25,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0  # Full history required for commitlint
+          submodules: recursive
 
       # # ── Step 2: fuck commit linting ────────────────────────────────────
       # - name: Lint Commit Messages
@@ -48,14 +49,18 @@ jobs:
       #     ament_cpplint .
       #   shell: bash
 
+      # Only interface packages are built in CI: the nav stack needs the Livox SDK and
+      # patched GLIM overlays that exist only on the Orin (built there by rover-update.sh).
       # ── Step 5: Compile Workspace ──────────────────────────────────────
       - name: Compile Workspace
         run: |
           source /opt/ros/jazzy/setup.bash
           colcon build \
             --base-paths . \
+            --packages-up-to kratos_msgs waypoint_interfaces \
             --symlink-install \
-            --event-handlers console_direct+
+            --event-handlers console_direct+ \
+            --cmake-args -DROS_EDITION=ROS2 -DDISTRO_ROS=jazzy
         shell: bash
 
       # ── Step 6: Unit Tests ─────────────────────────────────────────────
@@ -63,6 +68,6 @@ jobs:
         run: |
           source /opt/ros/jazzy/setup.bash
           source install/setup.bash
-          colcon test --event-handlers console_direct+
+          colcon test --packages-select kratos_msgs waypoint_interfaces --event-handlers console_direct+
           colcon test-result --all
         shell: bash

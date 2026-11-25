@@ -1,0 +1,8 @@
+[submodule "Auto_nav2"]
+	path = Auto_nav2
+	url = git@github.com:Project-Kratos-28/Auto_nav2.git
+	branch = main
+[submodule "Auto_Cams"]
+	path = Auto_Cams
+	url = git@github.com:Project-Kratos-28/Auto_Cams.git
+	branch = main
