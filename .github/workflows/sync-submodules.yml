@@ -33,8 +33,8 @@ jobs:
           if git diff --quiet; then
             echo "No submodule changes."; exit 0
           fi
-          git config user.name  "kratos-bot"
-          git config user.email "kratos-bot@users.noreply.github.com"
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
           git commit -m "chore: bump submodules (${{ github.event.client_payload.repo || 'manual' }})"
           git push origin development
